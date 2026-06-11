@@ -1,9 +1,16 @@
+import { useState, useEffect } from 'react'
 import { auth } from '../firebase/config'
-import { signOut } from 'firebase/auth'
+import { signOut, onAuthStateChanged } from 'firebase/auth'
 import { useNavigate } from 'react-router-dom'
 
 function Dashboard() {
+  const [user, setUser] = useState(null)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (u) => setUser(u))
+    return () => unsub()
+  }, [])
 
   const handleLogout = async () => {
     await signOut(auth)
@@ -42,7 +49,9 @@ function Dashboard() {
 
       {/* Main Content */}
       <div style={{ marginLeft: '240px', padding: '40px' }}>
-        <h1 style={{ color: 'white', fontSize: '28px', fontWeight: '700', marginBottom: '8px' }}>Good morning! 👋</h1>
+        <h1 style={{ color: 'white', fontSize: '28px', fontWeight: '700', marginBottom: '8px' }}>
+          Good morning, {user?.email?.split('@')[0]} 👋
+        </h1>
         <p style={{ color: '#6b7280', marginBottom: '40px' }}>Ready to learn something new today?</p>
 
         {/* Stats */}
