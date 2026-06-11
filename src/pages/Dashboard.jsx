@@ -27,14 +27,14 @@ function Dashboard() {
         </div>
 
         {[
-          { icon: '🏠', label: 'Dashboard' },
-          { icon: '📄', label: 'PDF Chat' },
-          { icon: '🧠', label: 'Quiz' },
-          { icon: '🃏', label: 'Flashcards' },
-          { icon: '🗺️', label: 'Roadmap' },
-          { icon: '📊', label: 'Progress' },
+           { icon: '🏠', label: 'Dashboard', path: '/dashboard' },
+  { icon: '📄', label: 'PDF Chat', path: '/pdf-chat' },
+  { icon: '🧠', label: 'Quiz', path: '/quiz' },
+  { icon: '🃏', label: 'Flashcards', path: '/flashcards' },
+  { icon: '🗺️', label: 'Roadmap', path: '/roadmap' },
+  { icon: '📊', label: 'Progress', path: '/progress' },
         ].map((item, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '10px', color: i === 0 ? 'white' : '#6b7280', background: i === 0 ? 'rgba(249,115,22,0.1)' : 'transparent', cursor: 'pointer', marginBottom: '4px', fontSize: '14px', fontWeight: '500' }}>
+        <div key={i} onClick={() => navigate(item.path)} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '10px', color: i === 0 ? 'white' : '#6b7280', background: i === 0 ? 'rgba(249,115,22,0.1)' : 'transparent', cursor: 'pointer', marginBottom: '4px', fontSize: '14px', fontWeight: '500' }}>
             <span>{item.icon}</span>
             <span>{item.label}</span>
           </div>

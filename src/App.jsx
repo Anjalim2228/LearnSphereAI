@@ -3,6 +3,7 @@ import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
+import PDFChat from './pages/PDFChat'
 import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
@@ -15,6 +16,11 @@ function App() {
         <Route path="/dashboard" element={
           <ProtectedRoute>
             <Dashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/pdf-chat" element={
+          <ProtectedRoute>
+            <PDFChat />
           </ProtectedRoute>
         } />
       </Routes>
