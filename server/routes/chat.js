@@ -44,4 +44,36 @@ router.post('/chat', async (req, res) => {
   }
 })
 
+router.post('/generate-quiz', async (req, res) => {
+  try {
+    const response = await groq.chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      messages: [
+        {
+          role: 'system',
+          content: `You are a quiz generator. Generate 5 MCQ questions from the given document. 
+          Respond ONLY with a JSON array like this, no extra text:
+          [
+            {
+              "question": "Question here?",
+              "options": ["A", "B", "C", "D"],
+              "answer": 0
+            }
+          ]`
+        },
+        {
+          role: 'user',
+          content: `Generate 5 MCQ questions from this document:\n\n${pdfText}`
+        }
+      ]
+    })
+    const text = response.choices[0].message.content
+    const quiz = JSON.parse(text)
+    res.json({ quiz })
+  } catch (err) {
+    console.error('QUIZ ERROR:', err)
+    res.status(500).json({ error: 'Quiz generation failed' })
+  }
+})
+
 export default router

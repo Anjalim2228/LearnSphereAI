@@ -1,38 +1,44 @@
 import { useState } from 'react'
 import Sidebar from '../components/Sidebar'
 
-const sampleQuiz = [
-  {
-    question: 'What is the powerhouse of the cell?',
-    options: ['Nucleus', 'Mitochondria', 'Ribosome', 'Golgi Body'],
-    answer: 1
-  },
-  {
-    question: 'What does CPU stand for?',
-    options: ['Central Processing Unit', 'Computer Personal Unit', 'Central Program Utility', 'Core Processing Unit'],
-    answer: 0
-  },
-  {
-    question: 'Which planet is closest to the Sun?',
-    options: ['Venus', 'Earth', 'Mercury', 'Mars'],
-    answer: 2
-  },
-]
-
 function Quiz() {
+  const [questions, setQuestions] = useState([])
   const [current, setCurrent] = useState(0)
   const [selected, setSelected] = useState(null)
   const [score, setScore] = useState(0)
   const [finished, setFinished] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [started, setStarted] = useState(false)
+
+  const generateQuiz = async () => {
+    setLoading(true)
+    try {
+      const res = await fetch('http://localhost:5000/api/generate-quiz', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+      const data = await res.json()
+      setQuestions(data.quiz)
+      setStarted(true)
+      setCurrent(0)
+      setScore(0)
+      setSelected(null)
+      setFinished(false)
+    } catch (err) {
+      alert('Upload a PDF first!')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleAnswer = (i) => {
     if (selected !== null) return
     setSelected(i)
-    if (i === sampleQuiz[current].answer) setScore(s => s + 1)
+    if (i === questions[current].answer) setScore(s => s + 1)
   }
 
   const handleNext = () => {
-    if (current + 1 >= sampleQuiz.length) {
+    if (current + 1 >= questions.length) {
       setFinished(true)
     } else {
       setCurrent(c => c + 1)
@@ -40,47 +46,45 @@ function Quiz() {
     }
   }
 
-  const handleRestart = () => {
-    setCurrent(0)
-    setSelected(null)
-    setScore(0)
-    setFinished(false)
-  }
-
   return (
     <div style={{ background: '#0d0d10', minHeight: '100vh', fontFamily: 'Inter, system-ui, sans-serif' }}>
       <Sidebar />
 
       <div style={{ marginLeft: '240px', padding: '40px' }}>
-        <h1 style={{ color: 'white', fontSize: '24px', fontWeight: '700', marginBottom: '8px' }}>🧠 Quiz</h1>
-        <p style={{ color: '#6b7280', marginBottom: '40px' }}>Test your knowledge</p>
+        <h1 style={{ color: 'white', fontSize: '24px', fontWeight: '700', marginBottom: '8px' }}>🧠 AI Quiz</h1>
+        <p style={{ color: '#6b7280', marginBottom: '40px' }}>AI generates questions from your PDF</p>
 
-        {!finished ? (
+        {!started ? (
+          <div style={{ textAlign: 'center', marginTop: '80px' }}>
+            <div style={{ fontSize: '64px', marginBottom: '24px' }}>🧠</div>
+            <h2 style={{ color: 'white', fontSize: '22px', fontWeight: '600', marginBottom: '12px' }}>Ready to test yourself?</h2>
+            <p style={{ color: '#6b7280', marginBottom: '32px' }}>Make sure you have uploaded a PDF in PDF Chat first!</p>
+            <button onClick={generateQuiz} disabled={loading} style={{ background: 'linear-gradient(135deg, #f97316, #ea580c)', border: 'none', padding: '14px 40px', borderRadius: '12px', color: 'white', fontSize: '16px', fontWeight: '600', cursor: 'pointer', opacity: loading ? 0.7 : 1 }}>
+              {loading ? 'Generating Quiz...' : 'Generate AI Quiz →'}
+            </button>
+          </div>
+        ) : !finished ? (
           <div style={{ maxWidth: '640px' }}>
-            {/* Progress */}
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
-              <span style={{ color: '#6b7280', fontSize: '14px' }}>Question {current + 1} of {sampleQuiz.length}</span>
+              <span style={{ color: '#6b7280', fontSize: '14px' }}>Question {current + 1} of {questions.length}</span>
               <span style={{ color: '#f97316', fontSize: '14px', fontWeight: '600' }}>Score: {score}</span>
             </div>
 
-            {/* Progress Bar */}
             <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '999px', height: '6px', marginBottom: '32px' }}>
-              <div style={{ background: 'linear-gradient(135deg, #f97316, #fbbf24)', height: '6px', borderRadius: '999px', width: `${((current + 1) / sampleQuiz.length) * 100}%`, transition: 'width 0.3s' }} />
+              <div style={{ background: 'linear-gradient(135deg, #f97316, #fbbf24)', height: '6px', borderRadius: '999px', width: `${((current + 1) / questions.length) * 100}%`, transition: 'width 0.3s' }} />
             </div>
 
-            {/* Question */}
             <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '28px', marginBottom: '24px' }}>
-              <p style={{ color: 'white', fontSize: '18px', fontWeight: '600', lineHeight: '1.5' }}>{sampleQuiz[current].question}</p>
+              <p style={{ color: 'white', fontSize: '18px', fontWeight: '600', lineHeight: '1.5' }}>{questions[current].question}</p>
             </div>
 
-            {/* Options */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
-              {sampleQuiz[current].options.map((opt, i) => {
+              {questions[current].options.map((opt, i) => {
                 let bg = 'rgba(255,255,255,0.03)'
                 let border = '1px solid rgba(255,255,255,0.08)'
                 let color = 'white'
                 if (selected !== null) {
-                  if (i === sampleQuiz[current].answer) { bg = 'rgba(34,197,94,0.1)'; border = '1px solid rgba(34,197,94,0.4)'; color = '#4ade80' }
+                  if (i === questions[current].answer) { bg = 'rgba(34,197,94,0.1)'; border = '1px solid rgba(34,197,94,0.4)'; color = '#4ade80' }
                   else if (i === selected) { bg = 'rgba(239,68,68,0.1)'; border = '1px solid rgba(239,68,68,0.4)'; color = '#f87171' }
                 }
                 return (
@@ -93,7 +97,7 @@ function Quiz() {
 
             {selected !== null && (
               <button onClick={handleNext} style={{ background: 'linear-gradient(135deg, #f97316, #ea580c)', border: 'none', padding: '14px 32px', borderRadius: '12px', color: 'white', fontSize: '15px', fontWeight: '600', cursor: 'pointer' }}>
-                {current + 1 >= sampleQuiz.length ? 'See Results' : 'Next Question →'}
+                {current + 1 >= questions.length ? 'See Results' : 'Next Question →'}
               </button>
             )}
           </div>
@@ -101,12 +105,11 @@ function Quiz() {
           <div style={{ maxWidth: '480px', textAlign: 'center' }}>
             <div style={{ fontSize: '64px', marginBottom: '24px' }}>🎉</div>
             <h2 style={{ color: 'white', fontSize: '28px', fontWeight: '700', marginBottom: '12px' }}>Quiz Complete!</h2>
-            <p style={{ color: '#6b7280', marginBottom: '32px' }}>You scored</p>
             <div style={{ fontSize: '72px', fontWeight: '800', background: 'linear-gradient(135deg, #f97316, #fbbf24)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: '32px' }}>
-              {score}/{sampleQuiz.length}
+              {score}/{questions.length}
             </div>
-            <button onClick={handleRestart} style={{ background: 'linear-gradient(135deg, #f97316, #ea580c)', border: 'none', padding: '14px 32px', borderRadius: '12px', color: 'white', fontSize: '15px', fontWeight: '600', cursor: 'pointer' }}>
-              Try Again
+            <button onClick={generateQuiz} style={{ background: 'linear-gradient(135deg, #f97316, #ea580c)', border: 'none', padding: '14px 32px', borderRadius: '12px', color: 'white', fontSize: '15px', fontWeight: '600', cursor: 'pointer' }}>
+              Generate New Quiz
             </button>
           </div>
         )}
