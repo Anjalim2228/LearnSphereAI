@@ -5,6 +5,7 @@ import Login from './pages/Login'
 import Signup from './pages/Signup'
 import PDFChat from './pages/PDFChat'
 import Quiz from './pages/Quiz'
+import Flashcards from './pages/Flashcards'
 import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
@@ -27,6 +28,11 @@ function App() {
         <Route path="/quiz" element={
           <ProtectedRoute>
             <Quiz />
+          </ProtectedRoute>
+        } />
+        <Route path="/flashcards" element={
+          <ProtectedRoute>
+            <Flashcards />
           </ProtectedRoute>
         } />
       </Routes>
