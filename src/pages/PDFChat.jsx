@@ -1,3 +1,4 @@
+import ReactMarkdown from 'react-markdown'
 import { useState } from 'react'
 import Sidebar from '../components/Sidebar'
 
@@ -78,10 +79,10 @@ function PDFChat() {
               <div style={{
                 maxWidth: '70%', padding: '12px 16px', borderRadius: '12px', fontSize: '14px', lineHeight: '1.5',
                 background: m.role === 'user' ? 'linear-gradient(135deg, #f97316, #ea580c)' : 'rgba(255,255,255,0.05)',
-                color: 'white',
+                color: 'white',lineHeight: '1.7',
                 border: m.role === 'ai' ? '1px solid rgba(255,255,255,0.08)' : 'none'
               }}>
-                {m.text}
+                {m.role === 'ai' ? <ReactMarkdown>{m.text}</ReactMarkdown> : m.text}
               </div>
             </div>
           ))}

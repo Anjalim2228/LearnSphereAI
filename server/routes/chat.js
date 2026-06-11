@@ -51,7 +51,7 @@ router.post('/generate-quiz', async (req, res) => {
       messages: [
         {
           role: 'system',
-          content: `You are a quiz generator. Generate 5 MCQ questions from the given document. 
+          content: `You are a quiz generator. Generate 10 MCQ questions from the given document. 
           Respond ONLY with a JSON array like this, no extra text:
           [
             {
@@ -63,7 +63,7 @@ router.post('/generate-quiz', async (req, res) => {
         },
         {
           role: 'user',
-          content: `Generate 5 MCQ questions from this document:\n\n${pdfText}`
+          content: `Generate 10 different and unique MCQ questions from this document. Each time generate completely new questions, do not repeat previous ones. Random seed: ${Date.now()}\n\n${pdfText}`
         }
       ]
     })
