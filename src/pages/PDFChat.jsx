@@ -7,24 +7,52 @@ function PDFChat() {
   ])
   const [input, setInput] = useState('')
   const [pdfName, setPdfName] = useState(null)
+  const [loading, setLoading] = useState(false)
 
-  const handlePDF = (e) => {
+  const handlePDF = async (e) => {
     const file = e.target.files[0]
-    if (file) setPdfName(file.name)
+    if (!file) return
+    setPdfName(file.name)
+
+    const formData = new FormData()
+    formData.append('pdf', file)
+
+    try {
+      const res = await fetch('http://localhost:5000/api/upload', {
+        method: 'POST',
+        body: formData
+      })
+      const data = await res.json()
+      setMessages(prev => [...prev, { role: 'ai', text: '✅ PDF uploaded! Ask me anything about it.' }])
+    } catch (err) {
+      setMessages(prev => [...prev, { role: 'ai', text: '❌ Upload failed. Try again.' }])
+    }
   }
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!input.trim()) return
-    setMessages(prev => [...prev, { role: 'user', text: input }])
+    const userMsg = input
+    setMessages(prev => [...prev, { role: 'user', text: userMsg }])
     setInput('')
-    setTimeout(() => {
-      setMessages(prev => [...prev, { role: 'ai', text: 'This is a demo response. AI integration coming soon!' }])
-    }, 800)
+    setLoading(true)
+
+    try {
+      const res = await fetch('http://localhost:5000/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userMsg })
+      })
+      const data = await res.json()
+      setMessages(prev => [...prev, { role: 'ai', text: data.reply }])
+    } catch (err) {
+      setMessages(prev => [...prev, { role: 'ai', text: '❌ Something went wrong.' }])
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
     <div style={{ background: '#0d0d10', minHeight: '100vh', fontFamily: 'Inter, system-ui, sans-serif', display: 'flex' }}>
-
       <Sidebar />
 
       <div style={{ marginLeft: '240px', padding: '40px', width: '100%', display: 'flex', flexDirection: 'column', height: '100vh' }}>
@@ -57,6 +85,13 @@ function PDFChat() {
               </div>
             </div>
           ))}
+          {loading && (
+            <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+              <div style={{ padding: '12px 16px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', color: '#6b7280', fontSize: '14px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                AI is thinking...
+              </div>
+            </div>
+          )}
         </div>
 
         <div style={{ display: 'flex', gap: '12px' }}>
@@ -67,11 +102,10 @@ function PDFChat() {
             placeholder="Ask anything about your PDF..."
             style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '14px 16px', color: 'white', fontSize: '14px', outline: 'none' }}
           />
-          <button onClick={handleSend} style={{ background: 'linear-gradient(135deg, #f97316, #ea580c)', border: 'none', padding: '14px 24px', borderRadius: '12px', color: 'white', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>
+          <button onClick={handleSend} disabled={loading} style={{ background: 'linear-gradient(135deg, #f97316, #ea580c)', border: 'none', padding: '14px 24px', borderRadius: '12px', color: 'white', fontSize: '14px', fontWeight: '600', cursor: 'pointer', opacity: loading ? 0.6 : 1 }}>
             Send →
           </button>
         </div>
-
       </div>
     </div>
   )
