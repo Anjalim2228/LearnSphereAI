@@ -76,4 +76,37 @@ router.post('/generate-quiz', async (req, res) => {
   }
 })
 
+
+router.post('/generate-flashcards', async (req, res) => {
+  try {
+    const response = await groq.chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      messages: [
+        {
+          role: 'system',
+          content: `You are a flashcard generator. Generate 10 flashcards from the given document.
+          Respond ONLY with a JSON array, no extra text:
+          [
+            {
+              "front": "Question or concept here?",
+              "back": "Answer or explanation here."
+            }
+          ]`
+        },
+        {
+          role: 'user',
+          content: `Generate 10 flashcards from this document. Random seed: ${Date.now()}\n\n${pdfText}`
+        }
+      ]
+    })
+    const text = response.choices[0].message.content
+    const clean = text.replace(/```json|```/g, '').trim()
+    const flashcards = JSON.parse(clean)
+    res.json({ flashcards })
+  } catch (err) {
+    console.error('FLASHCARD ERROR:', err)
+    res.status(500).json({ error: 'Flashcard generation failed' })
+  }
+})
+
 export default router
