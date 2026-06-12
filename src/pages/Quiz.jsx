@@ -1,3 +1,4 @@
+import { saveQuizResult } from '../api.js'
 import { useState } from 'react'
 import Sidebar from '../components/Sidebar'
 
@@ -37,9 +38,12 @@ function Quiz() {
     if (i === questions[current].answer) setScore(s => s + 1)
   }
 
+  await saveQuizResult(score + (i === questions[current].answer ? 1 : 0), questions.length, 'PDF')
   const handleNext = () => {
     if (current + 1 >= questions.length) {
-      setFinished(true)
+     const finalScore = current + 1 >= questions.length ? score : score
+await saveQuizResult(finalScore, questions.length, 'PDF')
+setFinished(true)
     } else {
       setCurrent(c => c + 1)
       setSelected(null)
