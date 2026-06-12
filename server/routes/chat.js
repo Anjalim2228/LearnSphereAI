@@ -109,4 +109,38 @@ router.post('/generate-flashcards', async (req, res) => {
   }
 })
 
+
+router.post('/generate-roadmap', async (req, res) => {
+  try {
+    const response = await groq.chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      messages: [
+        {
+          role: 'system',
+          content: `You are a study planner. Generate a 5-day study roadmap from the given document.
+          Respond ONLY with a JSON array, no extra text:
+          [
+            {
+              "day": "Day 1",
+              "title": "Topic title here",
+              "tasks": ["Task 1", "Task 2", "Task 3"],
+              "done": false
+            }
+          ]`
+        },
+        {
+          role: 'user',
+          content: `Generate a 5-day study roadmap from this document:\n\n${pdfText}`
+        }
+      ]
+    })
+    const text = response.choices[0].message.content
+    const clean = text.replace(/```json|```/g, '').trim()
+    const roadmap = JSON.parse(clean)
+    res.json({ roadmap })
+  } catch (err) {
+    console.error('ROADMAP ERROR:', err)
+    res.status(500).json({ error: 'Roadmap generation failed' })
+  }
+})
 export default router
