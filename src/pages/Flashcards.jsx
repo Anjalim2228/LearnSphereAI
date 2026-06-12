@@ -1,3 +1,4 @@
+import { saveFlashcardSession } from '../api.js'
 import { useState } from 'react'
 import Sidebar from '../components/Sidebar'
 
@@ -18,6 +19,7 @@ function Flashcards() {
       const data = await res.json()
       setCards(data.flashcards)
       setStarted(true)
+      await saveFlashcardSession(data.flashcards.length, 'PDF')
       setCurrent(0)
       setFlipped(false)
     } catch (err) {

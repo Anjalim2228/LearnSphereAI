@@ -1,3 +1,4 @@
+import { saveRoadmap } from '../api.js'
 import { useState } from 'react'
 import Sidebar from '../components/Sidebar'
 
@@ -16,6 +17,7 @@ function Roadmap() {
       const data = await res.json()
       setRoadmap(data.roadmap)
       setStarted(true)
+      await saveRoadmap('PDF')
     } catch (err) {
       alert('Upload a PDF first in PDF Chat!')
     } finally {

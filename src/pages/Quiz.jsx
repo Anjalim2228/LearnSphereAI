@@ -38,12 +38,10 @@ function Quiz() {
     if (i === questions[current].answer) setScore(s => s + 1)
   }
 
-  await saveQuizResult(score + (i === questions[current].answer ? 1 : 0), questions.length, 'PDF')
-  const handleNext = () => {
+  const handleNext = async () => {
     if (current + 1 >= questions.length) {
-     const finalScore = current + 1 >= questions.length ? score : score
-await saveQuizResult(finalScore, questions.length, 'PDF')
-setFinished(true)
+      await saveQuizResult(score, questions.length, 'PDF')
+      setFinished(true)
     } else {
       setCurrent(c => c + 1)
       setSelected(null)

@@ -1,3 +1,4 @@
+import { savePDFUpload } from '../api.js'
 import ReactMarkdown from 'react-markdown'
 import { useState } from 'react'
 import Sidebar from '../components/Sidebar'
@@ -25,6 +26,7 @@ function PDFChat() {
       })
       const data = await res.json()
       setMessages(prev => [...prev, { role: 'ai', text: '✅ PDF uploaded! Ask me anything about it.' }])
+      await savePDFUpload(file.name)
     } catch (err) {
       setMessages(prev => [...prev, { role: 'ai', text: '❌ Upload failed. Try again.' }])
     }
