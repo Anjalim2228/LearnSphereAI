@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { auth } from '../firebase/config'
-import { createUserWithEmailAndPassword } from 'firebase/auth'
+import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from 'firebase/auth'
 import { useNavigate, Link } from 'react-router-dom'
+import { saveUser } from '../api.js'
 
 function Signup() {
   const [email, setEmail] = useState('')
@@ -9,13 +10,36 @@ function Signup() {
   const [error, setError] = useState('')
   const navigate = useNavigate()
 
+  useEffect(() => {
+    const checkRedirect = async () => {
+      try {
+        const result = await getRedirectResult(auth)
+        if (result) {
+          await saveUser(result.user.email, result.user.displayName || '', result.user.photoURL || '')
+          navigate('/dashboard')
+        }
+      } catch (err) {}
+    }
+    checkRedirect()
+  }, [])
+
   const handleSignup = async (e) => {
     e.preventDefault()
     try {
-      await createUserWithEmailAndPassword(auth, email, password)
+      const result = await createUserWithEmailAndPassword(auth, email, password)
+      await saveUser(result.user.email, result.user.displayName || '', result.user.photoURL || '')
       navigate('/dashboard')
     } catch (err) {
       setError('Something went wrong. Try again.')
+    }
+  }
+
+  const handleGoogle = async () => {
+    try {
+      const provider = new GoogleAuthProvider()
+      await signInWithRedirect(auth, provider)
+    } catch (err) {
+      setError('Google signup failed. Try again.')
     }
   }
 
@@ -30,38 +54,27 @@ function Signup() {
 
         <div style={{ marginBottom: '16px' }}>
           <label style={{ color: '#9ca3af', fontSize: '13px', display: 'block', marginBottom: '6px' }}>Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            placeholder="you@example.com"
-            style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '12px 16px', color: 'white', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
-          />
+          <input type="email" value={email} onChange={e => setEmail(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSignup(e)} placeholder="you@example.com" style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '12px 16px', color: 'white', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }} />
         </div>
 
         <div style={{ marginBottom: '24px' }}>
           <label style={{ color: '#9ca3af', fontSize: '13px', display: 'block', marginBottom: '6px' }}>Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            placeholder="••••••••"
-            style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '12px 16px', color: 'white', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
-          />
+          <input type="password" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSignup(e)} placeholder="••••••••" style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '12px 16px', color: 'white', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }} />
         </div>
 
-        <button
-          onClick={handleSignup}
-          style={{ width: '100%', background: 'linear-gradient(135deg, #f97316, #ea580c)', border: 'none', padding: '14px', borderRadius: '12px', color: 'white', fontSize: '16px', fontWeight: '600', cursor: 'pointer' }}
-        >
+        <button onClick={handleSignup} style={{ width: '100%', background: 'linear-gradient(135deg, #f97316, #ea580c)', border: 'none', padding: '14px', borderRadius: '12px', color: 'white', fontSize: '16px', fontWeight: '600', cursor: 'pointer', marginBottom: '12px' }}>
           Create Account →
+        </button>
+
+        <button onClick={handleGoogle} style={{ width: '100%', background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '12px', color: 'white', fontSize: '15px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+          <img src="https://www.google.com/favicon.ico" width="18" height="18" />
+          Continue with Google
         </button>
 
         <p style={{ textAlign: 'center', color: '#6b7280', fontSize: '14px', marginTop: '24px' }}>
           Already have an account?{' '}
           <Link to="/login" style={{ color: '#f97316', textDecoration: 'none', fontWeight: '600' }}>Login</Link>
         </p>
-
       </div>
     </div>
   )

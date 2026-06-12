@@ -32,7 +32,6 @@ function Progress() {
           <p style={{ color: '#6b7280' }}>Loading...</p>
         ) : (
           <>
-            {/* Stats */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '40px' }}>
               {[
                 { label: 'Quizzes Taken', value: data?.totalQuizzes || 0, icon: '🧠' },
@@ -48,7 +47,6 @@ function Progress() {
               ))}
             </div>
 
-            {/* Recent Quizzes */}
             <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '28px', marginBottom: '24px' }}>
               <h2 style={{ color: 'white', fontSize: '16px', fontWeight: '600', marginBottom: '20px' }}>🧠 Recent Quizzes</h2>
               {data?.quizzes?.length === 0 ? (
@@ -69,7 +67,6 @@ function Progress() {
               )}
             </div>
 
-            {/* Recent Flashcards */}
             <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '28px' }}>
               <h2 style={{ color: 'white', fontSize: '16px', fontWeight: '600', marginBottom: '20px' }}>🃏 Recent Flashcard Sessions</h2>
               {data?.flashcards?.length === 0 ? (

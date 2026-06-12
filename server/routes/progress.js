@@ -1,3 +1,4 @@
+import mongoose from 'mongoose'
 import express from 'express'
 import verifyToken from '../middleware/auth.js'
 import QuizResult from '../models/QuizResult.js'
@@ -7,7 +8,29 @@ import PDFUpload from '../models/PDFUpload.js'
 
 const router = express.Router()
 
-// Save quiz result
+const userSchema = new mongoose.Schema({
+  userId: { type: String, required: true, unique: true },
+  email: { type: String, required: true },
+  name: { type: String, default: '' },
+  photoURL: { type: String, default: '' },
+}, { timestamps: true })
+
+const User = mongoose.model('User', userSchema)
+
+router.post('/user', verifyToken, async (req, res) => {
+  try {
+    const { email, name, photoURL } = req.body
+    const user = await User.findOneAndUpdate(
+      { userId: req.userId },
+      { userId: req.userId, email, name, photoURL },
+      { upsert: true, new: true }
+    )
+    res.json({ success: true, user })
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to save user' })
+  }
+})
+
 router.post('/quiz', verifyToken, async (req, res) => {
   try {
     const { score, total, pdfName } = req.body
@@ -18,7 +41,6 @@ router.post('/quiz', verifyToken, async (req, res) => {
   }
 })
 
-// Save flashcard session
 router.post('/flashcard', verifyToken, async (req, res) => {
   try {
     const { cardsViewed, pdfName } = req.body
@@ -29,7 +51,6 @@ router.post('/flashcard', verifyToken, async (req, res) => {
   }
 })
 
-// Save roadmap session
 router.post('/roadmap', verifyToken, async (req, res) => {
   try {
     const { pdfName } = req.body
@@ -40,7 +61,6 @@ router.post('/roadmap', verifyToken, async (req, res) => {
   }
 })
 
-// Save PDF upload
 router.post('/pdf', verifyToken, async (req, res) => {
   try {
     const { pdfName } = req.body
@@ -51,7 +71,6 @@ router.post('/pdf', verifyToken, async (req, res) => {
   }
 })
 
-// Get all progress
 router.get('/summary', verifyToken, async (req, res) => {
   try {
     const userId = req.userId
@@ -65,22 +84,12 @@ router.get('/summary', verifyToken, async (req, res) => {
     const totalFlashcards = flashcards.reduce((a, b) => a + b.cardsViewed, 0)
     const totalPDFs = pdfs.length
 
-    res.json({
-      totalQuizzes,
-      avgScore,
-      totalFlashcards,
-      totalPDFs,
-      quizzes,
-      flashcards,
-      roadmaps,
-      pdfs
-    })
+    res.json({ totalQuizzes, avgScore, totalFlashcards, totalPDFs, quizzes, flashcards, roadmaps, pdfs })
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch progress' })
   }
 })
 
-// Get history
 router.get('/history', verifyToken, async (req, res) => {
   try {
     const userId = req.userId

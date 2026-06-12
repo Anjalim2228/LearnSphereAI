@@ -58,3 +58,12 @@ export const getHistory = async () => {
   })
   return res.json()
 }
+
+export const saveUser = async (email, name, photoURL) => {
+  const token = await getToken()
+  await fetch(`${BASE_URL}/progress/user`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    body: JSON.stringify({ email, name, photoURL })
+  })
+}
