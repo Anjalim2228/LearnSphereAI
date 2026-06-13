@@ -39,7 +39,7 @@ function VisualNotes() {
     <div style={{ background: '#0d0d10', minHeight: '100vh', fontFamily: 'Inter, system-ui, sans-serif', display: 'flex' }}>
       <Sidebar />
 
-      <div style={{ marginLeft: '240px', padding: '40px', width: '100%' }}>
+      <div style={{ marginLeft: '240px', padding: '40px', width: 'calc(100% - 240px)', boxSizing: 'border-box' }}>
         <h1 style={{ color: 'white', fontSize: '24px', fontWeight: '700', marginBottom: '8px' }}>🌳 Visual Notes</h1>
         <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '32px' }}>
           Apne uploaded PDF ko visually samjho — koi bhi format choose karo.
@@ -68,7 +68,7 @@ function VisualNotes() {
           ))}
         </div>
 
-        <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '24px', minHeight: '300px', color: 'white' }}>
+        <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '24px', minHeight: '300px', color: 'white', maxWidth: '100%', overflow: 'hidden' }}> 
           {loading && <p style={{ color: '#6b7280' }}>AI generate kar raha hai...</p>}
           {!loading && !result && <p style={{ color: '#6b7280' }}>Upar se ek format choose karo, AI yaha result dikhayega.</p>}
           {!loading && result && (
