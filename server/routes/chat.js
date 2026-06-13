@@ -160,15 +160,16 @@ router.post('/generate-visual', async (req, res) => {
           { "title": "Subtopic 2", "children": [ { "title": "Point C" } ] }
         ]
       }`
-    } else if (type === 'mindmap') {
-      instruction = `Create a mind map structure from this document. Respond ONLY with JSON in this format, no extra text:
-      {
-        "title": "Central Idea",
-        "branches": [
-          { "label": "Branch 1", "points": ["point a", "point b"] },
-          { "label": "Branch 2", "points": ["point c"] }
-        ]
-      }`
+   } else if (type === 'mindmap') {
+  instruction = `Create a mind map from this document. Identify the central theme, then create ONE branch for EVERY major topic/section/concept covered in the document (do not limit to a fixed number — cover all major topics present). For each branch, give 2-4 short key points (max 5 words each). Respond ONLY with JSON in this format, no extra text:
+  {
+    "title": "Central Theme",
+    "branches": [
+      { "label": "Topic Name", "points": ["short point", "short point"] }
+    ]
+  }`
+
+
     } else if (type === 'bullets') {
       instruction = `Summarize this document as short bullet points grouped by topic. Respond ONLY with JSON in this format, no extra text:
       {
@@ -177,15 +178,18 @@ router.post('/generate-visual', async (req, res) => {
           { "heading": "Topic 2", "points": ["short point 3"] }
         ]
       }`
-    } else if (type === 'graph') {
-      instruction = `Extract any numeric/comparable data from this document suitable for a bar chart. If no real data exists, create a relevance/importance score (1-10) for key topics instead. Respond ONLY with JSON in this format, no extra text:
-      {
-        "title": "Chart Title",
-        "data": [
-          { "label": "Item 1", "value": 8 },
-          { "label": "Item 2", "value": 5 }
-        ]
-      }`
+   } else if (type === 'graph') {
+  instruction = `Create a detailed concept overview diagram from this document. Identify the main topic and create ONE entry for EVERY major topic/section covered in the document (cover all of them, don't limit to a fixed number). For each topic, give a clear 2-3 line explanation in simple language covering what it is and why it matters. Respond ONLY with JSON in this format, no extra text:
+  {
+    "title": "Main Topic Name",
+    "concepts": [
+      { "heading": "Topic Name", "explanation": "Clear 2-3 line explanation covering what it is and why it matters." }
+    ]
+  }`
+
+
+
+
     } else {
       return res.status(400).json({ error: 'Invalid type' })
     }

@@ -1,6 +1,11 @@
 import { useState } from 'react'
 import Sidebar from '../components/Sidebar'
 import TreeDiagram from '../components/TreeDiagram'
+import BulletNotes from '../components/BulletNotes'
+import GraphChart from '../components/GraphChart'
+import FlowGraph from '../components/FlowGraph'
+import ConceptDiagram from '../components/ConceptDiagram'
+import MindMap from '../components/MindMap'
 
 function VisualNotes() {
   const [selected, setSelected] = useState(null)
@@ -74,7 +79,10 @@ function VisualNotes() {
           {!loading && result && (
   <>
     {result.type === 'tree' && <TreeDiagram data={result.data} />}
-    {result.type !== 'tree' && (
+    {result.type === 'bullets' && <BulletNotes data={result.data} />}
+    {result.type === 'graph' && <ConceptDiagram data={result.data} />}
+    {result.type === 'mindmap' && <MindMap data={result.data} />}
+    {!['tree', 'bullets', 'graph', 'mindmap'].includes(result.type) && (
       <pre style={{ whiteSpace: 'pre-wrap', color: '#d1d5db', fontSize: '13px' }}>
         {JSON.stringify(result, null, 2)}
       </pre>
