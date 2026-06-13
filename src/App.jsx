@@ -3,15 +3,33 @@ import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
+import PDFChat from './pages/PDFChat'
+import VisualNotes from './pages/VisualNotes'
+import Quiz from './pages/Quiz'
+import Flashcards from './pages/Flashcards'
+import Roadmap from './pages/Roadmap'
+import Progress from './pages/Progress'
+import History from './pages/History'
+import ProtectedRoute from './components/ProtectedRoute'
+
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/pdf-chat" element={<ProtectedRoute><PDFChat /></ProtectedRoute>} />
+        <Route path="/visual-notes" element={
+  <ProtectedRoute><VisualNotes /></ProtectedRoute>
+} />
+        <Route path="/quiz" element={<ProtectedRoute><Quiz /></ProtectedRoute>} />
+        <Route path="/flashcards" element={<ProtectedRoute><Flashcards /></ProtectedRoute>} />
+        <Route path="/roadmap" element={<ProtectedRoute><Roadmap /></ProtectedRoute>} />
+        <Route path="/progress" element={<ProtectedRoute><Progress /></ProtectedRoute>} />
+        <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   )
