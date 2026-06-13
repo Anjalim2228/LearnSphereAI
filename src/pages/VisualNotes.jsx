@@ -6,17 +6,21 @@ import GraphChart from '../components/GraphChart'
 import FlowGraph from '../components/FlowGraph'
 import ConceptDiagram from '../components/ConceptDiagram'
 import MindMap from '../components/MindMap'
+import jsPDF from 'jspdf'
+import html2canvas from 'html2canvas'
+import { useRef } from 'react'
 
 function VisualNotes() {
   const [selected, setSelected] = useState(null)
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState(null)
+  const resultRef = useRef(null)
 
   const options = [
-    { key: 'tree', icon: '🌳', label: 'Tree Diagram', desc: 'Topic ko branches mein todo' },
-    { key: 'mindmap', icon: '🧠', label: 'Mind Map', desc: 'Concepts ko connections ke saath dekho' },
-    { key: 'bullets', icon: '📝', label: 'Bullet Points', desc: 'Quick shortcut summary' },
-    { key: 'graph', icon: '📊', label: 'Graph / Chart', desc: 'Data ko visually compare karo' },
+    { key: 'tree', icon: '🌳', label: 'Tree Diagram', desc: 'Break topics into branches' },
+    { key: 'mindmap', icon: '🧠', label: 'Mind Map', desc: 'See concepts with connections' },
+    { key: 'bullets', icon: '📝', label: 'Bullet Points', desc: 'Quick summary of key points' },
+    { key: 'graph', icon: '📊', label: 'Graph / Chart', desc: 'Visually compare data' },
   ]
 
   const handleSelect = async (key) => {
@@ -40,6 +44,17 @@ function VisualNotes() {
   }
 }
 
+ const handleDownloadPDF = async () => {
+  if (!resultRef.current) return
+  const canvas = await html2canvas(resultRef.current, { backgroundColor: '#0d0d10' })
+  const imgData = canvas.toDataURL('image/png')
+  const pdf = new jsPDF('p', 'mm', 'a4')
+  const width = pdf.internal.pageSize.getWidth()
+  const height = (canvas.height * width) / canvas.width
+  pdf.addImage(imgData, 'PNG', 0, 0, width, height)
+  pdf.save(`${selected || 'visual-notes'}.pdf`)
+}
+
   return (
     <div style={{ background: '#0d0d10', minHeight: '100vh', fontFamily: 'Inter, system-ui, sans-serif', display: 'flex' }}>
       <Sidebar />
@@ -47,7 +62,7 @@ function VisualNotes() {
       <div style={{ marginLeft: '240px', padding: '40px', width: 'calc(100% - 240px)', boxSizing: 'border-box' }}>
         <h1 style={{ color: 'white', fontSize: '24px', fontWeight: '700', marginBottom: '8px' }}>🌳 Visual Notes</h1>
         <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '32px' }}>
-          Apne uploaded PDF ko visually samjho — koi bhi format choose karo.
+          Understand your uploaded PDF visually — choose any format.
         </p>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '32px' }}>
@@ -73,11 +88,24 @@ function VisualNotes() {
           ))}
         </div>
 
-        <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '24px', minHeight: '300px', color: 'white', maxWidth: '100%', overflow: 'hidden' }}> 
-          {loading && <p style={{ color: '#6b7280' }}>AI generate kar raha hai...</p>}
-          {!loading && !result && <p style={{ color: '#6b7280' }}>Upar se ek format choose karo, AI yaha result dikhayega.</p>}
+        <div  ref={resultRef} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '24px', minHeight: '300px', color: 'white', maxWidth: '100%', overflow: 'hidden' }}> 
+         {loading && <p style={{ color: '#6b7280' }}>AI is generating...</p>}
+{!loading && !result && <p style={{ color: '#6b7280' }}>Choose a format above, AI will show the result here.</p>}
           {!loading && result && (
   <>
+  <button onClick={handleDownloadPDF} style={{
+      background: 'rgba(249,115,22,0.15)',
+      border: '1px solid rgba(249,115,22,0.5)',
+      borderRadius: '8px',
+      padding: '8px 16px',
+      color: '#f97316',
+      fontSize: '13px',
+      fontWeight: '600',
+      cursor: 'pointer',
+      marginBottom: '16px'
+    }}>
+      ⬇️ Download as PDF
+    </button>
     {result.type === 'tree' && <TreeDiagram data={result.data} />}
     {result.type === 'bullets' && <BulletNotes data={result.data} />}
     {result.type === 'graph' && <ConceptDiagram data={result.data} />}

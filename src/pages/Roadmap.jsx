@@ -1,45 +1,64 @@
+import { useState } from 'react'
 import Sidebar from '../components/Sidebar'
 
-const roadmap = [
-  {
-    day: 'Day 1', title: 'Introduction & Basics',
-    tasks: ['Read Chapter 1', 'Watch intro video', 'Take notes'],
-    done: true
-  },
-  {
-    day: 'Day 2', title: 'Core Concepts',
-    tasks: ['Read Chapter 2-3', 'Solve 10 practice questions', 'Make flashcards'],
-    done: true
-  },
-  {
-    day: 'Day 3', title: 'Deep Dive',
-    tasks: ['Read Chapter 4-5', 'Watch tutorial videos', 'Quiz yourself'],
-    done: false
-  },
-  {
-    day: 'Day 4', title: 'Practice & Revision',
-    tasks: ['Solve past papers', 'Revise flashcards', 'Review weak areas'],
-    done: false
-  },
-  {
-    day: 'Day 5', title: 'Final Revision',
-    tasks: ['Full revision', 'Mock test', 'Rest & prepare'],
-    done: false
-  },
-]
-
 function Roadmap() {
+  const [roadmap, setRoadmap] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+
+  const handleGenerate = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await fetch('http://localhost:5000/api/generate-roadmap', {
+        method: 'POST'
+      })
+      const data = await res.json()
+      if (data.roadmap) {
+        setRoadmap(data.roadmap)
+      } else {
+        setError(data.error || 'Failed to generate roadmap')
+      }
+    } catch (err) {
+      setError('Something went wrong')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div style={{ background: '#0d0d10', minHeight: '100vh', fontFamily: 'Inter, system-ui, sans-serif' }}>
       <Sidebar />
 
       <div style={{ marginLeft: '240px', padding: '40px' }}>
         <h1 style={{ color: 'white', fontSize: '24px', fontWeight: '700', marginBottom: '8px' }}>🗺️ Study Roadmap</h1>
-        <p style={{ color: '#6b7280', marginBottom: '40px' }}>Your personalized day-by-day study plan</p>
+        <p style={{ color: '#6b7280', marginBottom: '24px' }}>Your personalized day-by-day study plan</p>
+
+        <button onClick={handleGenerate} disabled={loading} style={{
+          background: 'linear-gradient(135deg, #f97316, #ea580c)',
+          border: 'none',
+          padding: '12px 24px',
+          borderRadius: '12px',
+          color: 'white',
+          fontSize: '14px',
+          fontWeight: '600',
+          cursor: 'pointer',
+          marginBottom: '40px',
+          opacity: loading ? 0.6 : 1
+        }}>
+          {loading ? 'Generating...' : '✨ Generate Roadmap'}
+        </button>
+
+        {error && <p style={{ color: '#ef4444', marginBottom: '24px' }}>{error}</p>}
+
+        {roadmap.length === 0 && !loading && !error && (
+          <p style={{ color: '#6b7280' }}>Click "Generate Roadmap" to create a study plan from your uploaded PDF/video.</p>
+        )}
 
         <div style={{ maxWidth: '900px', position: 'relative', margin: '0 auto' }}>
-          {/* Center vertical line */}
-          <div style={{ position: 'absolute', left: '50%', top: '0', bottom: '0', width: '2px', background: 'rgba(255,255,255,0.08)', transform: 'translateX(-50%)' }} />
+          {roadmap.length > 0 && (
+            <div style={{ position: 'absolute', left: '50%', top: '0', bottom: '0', width: '2px', background: 'rgba(255,255,255,0.08)', transform: 'translateX(-50%)' }} />
+          )}
 
           {roadmap.map((item, i) => {
             const isLeft = i % 2 === 0
@@ -50,7 +69,6 @@ function Roadmap() {
                 marginBottom: '40px',
                 position: 'relative'
               }}>
-                {/* Circle on center line */}
                 <div style={{
                   position: 'absolute',
                   left: '50%',
@@ -62,10 +80,9 @@ function Roadmap() {
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: '18px', zIndex: 2
                 }}>
-                  { '📅'}
+                  📅
                 </div>
 
-                {/* Card */}
                 <div style={{
                   width: '46%',
                   background: 'rgba(255,255,255,0.03)',

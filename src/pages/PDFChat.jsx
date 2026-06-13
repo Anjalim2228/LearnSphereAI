@@ -10,6 +10,8 @@ function PDFChat() {
   const [input, setInput] = useState('')
   const [pdfName, setPdfName] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [youtubeUrl, setYoutubeUrl] = useState('')
+  const [ytLoading, setYtLoading] = useState(false)
 
   const handlePDF = async (e) => {
     const file = e.target.files[0]
@@ -29,6 +31,29 @@ function PDFChat() {
       await savePDFUpload(file.name)
     } catch (err) {
       setMessages(prev => [...prev, { role: 'ai', text: '❌ Upload failed. Try again.' }])
+    }
+  }
+
+  const handleYoutubeSubmit = async () => {
+    if (!youtubeUrl) return
+    setYtLoading(true)
+    try {
+      const res = await fetch('http://localhost:5000/api/youtube', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: youtubeUrl })
+      })
+      const data = await res.json()
+      if (data.success) {
+        setPdfName('YouTube Video Loaded')
+        setMessages(prev => [...prev, { role: 'ai', text: '✅ YouTube video loaded! Ask me anything about it.' }])
+      } else {
+        setMessages(prev => [...prev, { role: 'ai', text: `❌ ${data.error || 'Failed to load video'}` }])
+      }
+    } catch (err) {
+      setMessages(prev => [...prev, { role: 'ai', text: '❌ Something went wrong.' }])
+    } finally {
+      setYtLoading(false)
     }
   }
 
@@ -62,15 +87,47 @@ function PDFChat() {
         <h1 style={{ color: 'white', fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>📄 PDF Chat</h1>
 
         {!pdfName ? (
-          <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '2px dashed rgba(249,115,22,0.3)', borderRadius: '16px', padding: '60px', cursor: 'pointer', marginBottom: '24px', background: 'rgba(249,115,22,0.03)' }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>📁</div>
-            <p style={{ color: 'white', fontWeight: '600', marginBottom: '8px' }}>Click to upload PDF</p>
-            <p style={{ color: '#6b7280', fontSize: '13px' }}>Drag and drop or click to browse</p>
-            <input type="file" accept=".pdf" onChange={handlePDF} style={{ display: 'none' }} />
-          </label>
+          <>
+            <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '2px dashed rgba(249,115,22,0.3)', borderRadius: '16px', padding: '60px', cursor: 'pointer', marginBottom: '16px', background: 'rgba(249,115,22,0.03)' }}>
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>📁</div>
+              <p style={{ color: 'white', fontWeight: '600', marginBottom: '8px' }}>Click to upload PDF</p>
+              <p style={{ color: '#6b7280', fontSize: '13px' }}>Drag and drop or click to browse</p>
+              <input type="file" accept=".pdf" onChange={handlePDF} style={{ display: 'none' }} />
+            </label>
+
+            <div style={{ marginBottom: '24px', display: 'flex', gap: '8px' }}>
+              <input
+                type="text"
+                placeholder="Paste YouTube video link here..."
+                value={youtubeUrl}
+                onChange={(e) => setYoutubeUrl(e.target.value)}
+                style={{
+                  flex: 1,
+                  background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  borderRadius: '8px',
+                  padding: '10px 14px',
+                  color: 'white',
+                  fontSize: '13px'
+                }}
+              />
+              <button onClick={handleYoutubeSubmit} disabled={ytLoading} style={{
+                background: 'rgba(249,115,22,0.15)',
+                border: '1px solid rgba(249,115,22,0.5)',
+                borderRadius: '8px',
+                padding: '10px 20px',
+                color: '#f97316',
+                fontWeight: '600',
+                cursor: 'pointer',
+                fontSize: '13px'
+              }}>
+                {ytLoading ? 'Loading...' : '▶️ Load Video'}
+              </button>
+            </div>
+          </>
         ) : (
           <div style={{ background: 'rgba(249,115,22,0.1)', border: '1px solid rgba(249,115,22,0.3)', borderRadius: '12px', padding: '16px 20px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '24px' }}>📄</span>
+            <span style={{ fontSize: '24px' }}>{pdfName === 'YouTube Video Loaded' ? '▶️' : '📄'}</span>
             <span style={{ color: 'white', fontSize: '14px', fontWeight: '500' }}>{pdfName}</span>
           </div>
         )}
