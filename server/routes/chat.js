@@ -5,6 +5,7 @@ import Groq from 'groq-sdk'
 import fs from 'fs'
 import { createRequire } from 'module'
 import { YoutubeTranscript } from 'youtube-transcript'
+import nodemailer from 'nodemailer'
 
 const require = createRequire(import.meta.url)
 const pdfParse = require('pdf-parse').default || require('pdf-parse')
@@ -15,6 +16,15 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
 let pdfText = ''
 
+const otpStore = {} // { email: { otp, expiresAt } }
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+})
 router.post('/upload', upload.single('pdf'), async (req, res) => {
   try {
     const dataBuffer = fs.readFileSync(req.file.path)
@@ -39,11 +49,49 @@ router.post('/youtube', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch transcript. Make sure the video has captions/subtitles.' })
   }
 })
+router.post('/send-otp', async (req, res) => {
+  try {
+    const { email } = req.body
+    const otp = Math.floor(100000 + Math.random() * 900000).toString()
+    otpStore[email] = { otp, expiresAt: Date.now() + 5 * 60 * 1000 } // 5 min valid
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'LearnSphere AI - Email Verification OTP',
+      text: `Your OTP is: ${otp}. It is valid for 5 minutes.`
+    })
+
+    res.json({ success: true, message: 'OTP sent successfully' })
+  } catch (err) {
+    console.error('OTP SEND ERROR:', err)
+    res.status(500).json({ error: 'Failed to send OTP' })
+  }
+})
+
+router.post('/verify-otp', (req, res) => {
+  const { email, otp } = req.body
+  const record = otpStore[email]
+
+  if (!record) {
+    return res.status(400).json({ success: false, error: 'No OTP found. Please request again.' })
+  }
+  if (Date.now() > record.expiresAt) {
+    delete otpStore[email]
+    return res.status(400).json({ success: false, error: 'OTP expired. Please request again.' })
+  }
+  if (record.otp !== otp) {
+    return res.status(400).json({ success: false, error: 'Invalid OTP' })
+  }
+
+  delete otpStore[email]
+  res.json({ success: true, message: 'Email verified successfully' })
+})
 router.post('/chat', async (req, res) => {
   try {
     const { message } = req.body
     const response = await groq.chat.completions.create({
-      model: 'llama-3.3-70b-versatile',
+    model: 'llama-3.1-8b-instant' ,
       messages: [
         { role: 'system', content: `You are a helpful study assistant. Answer questions based on this document:\n\n${pdfText.slice(0, 4000)}` },
         { role: 'user', content: message }
