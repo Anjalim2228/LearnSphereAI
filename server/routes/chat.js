@@ -4,6 +4,7 @@ import multer from 'multer'
 import Groq from 'groq-sdk'
 import fs from 'fs'
 import { createRequire } from 'module'
+import { YoutubeTranscript } from 'youtube-transcript'
 
 const require = createRequire(import.meta.url)
 const pdfParse = require('pdf-parse').default || require('pdf-parse')
@@ -18,7 +19,7 @@ router.post('/upload', upload.single('pdf'), async (req, res) => {
   try {
     const dataBuffer = fs.readFileSync(req.file.path)
     const data = await pdfParse(dataBuffer)
-    pdfText = data.text
+    pdfText = data.text.slice(0, 15000) // limit stored text
     fs.unlinkSync(req.file.path)
     res.json({ success: true, message: 'PDF uploaded successfully!' })
   } catch (err) {
@@ -26,14 +27,25 @@ router.post('/upload', upload.single('pdf'), async (req, res) => {
     res.status(500).json({ error: 'PDF processing failed' })
   }
 })
-
+router.post('/youtube', async (req, res) => {
+  try {
+    const { url } = req.body
+    const transcriptItems = await YoutubeTranscript.fetchTranscript(url)
+    const fullText = transcriptItems.map(item => item.text).join(' ')
+    pdfText = fullText.slice(0, 15000)
+    res.json({ success: true, message: 'YouTube transcript loaded successfully!' })
+  } catch (err) {
+    console.error('YOUTUBE ERROR:', err)
+    res.status(500).json({ error: 'Failed to fetch transcript. Make sure the video has captions/subtitles.' })
+  }
+})
 router.post('/chat', async (req, res) => {
   try {
     const { message } = req.body
     const response = await groq.chat.completions.create({
       model: 'llama-3.3-70b-versatile',
       messages: [
-        { role: 'system', content: `You are a helpful study assistant. Answer questions based on this document:\n\n${pdfText}` },
+        { role: 'system', content: `You are a helpful study assistant. Answer questions based on this document:\n\n${pdfText.slice(0, 4000)}` },
         { role: 'user', content: message }
       ]
     })
@@ -63,7 +75,7 @@ router.post('/generate-quiz', async (req, res) => {
         },
         {
           role: 'user',
-          content: `Generate 10 different and unique MCQ questions from this document. Each time generate completely new questions, do not repeat previous ones. Random seed: ${Date.now()}\n\n${pdfText}`
+          content: `Generate 10 different and unique MCQ questions from this document. Each time generate completely new questions, do not repeat previous ones. Random seed: ${Date.now()}\n\n${pdfText.slice(0, 6000)}`
         }
       ]
     })
@@ -95,7 +107,7 @@ router.post('/generate-flashcards', async (req, res) => {
         },
         {
           role: 'user',
-          content: `Generate 10 flashcards from this document. Random seed: ${Date.now()}\n\n${pdfText}`
+          content: `Generate 10 flashcards from this document. Random seed: ${Date.now()}\n\n${pdfText.slice(0, 6000)}`
         }
       ]
     })
@@ -117,7 +129,7 @@ router.post('/generate-roadmap', async (req, res) => {
       messages: [
         {
           role: 'system',
-          content: `You are a study planner. Generate a 5-day study roadmap from the given document.
+          content: `You are a study planner. Based on the amount of content in the document, generate an appropriate multi-day study roadmap (could be 5, 7, 10, or more days depending on how much content there is — cover everything important, don't limit to a fixed number).
           Respond ONLY with a JSON array, no extra text:
           [
             {
@@ -130,7 +142,7 @@ router.post('/generate-roadmap', async (req, res) => {
         },
         {
           role: 'user',
-          content: `Generate a 5-day study roadmap from this document:\n\n${pdfText}`
+          content: `Generate a study roadmap from this document, covering all major topics across as many days as needed:\n\n${pdfText.slice(0, 6000)}`
         }
       ]
     })
@@ -194,12 +206,15 @@ router.post('/generate-visual', async (req, res) => {
       return res.status(400).json({ error: 'Invalid type' })
     }
 
+    const safeText = pdfText.slice(0, 6000)
+
     const response = await groq.chat.completions.create({
       model: 'llama-3.3-70b-versatile',
       messages: [
         { role: 'system', content: instruction },
-        { role: 'user', content: `Document:\n\n${pdfText}` }
+        { role: 'user', content: `Document:\n\n${safeText}` }
       ]
+      
     })
 
    const text = response.choices[0].message.content
