@@ -202,10 +202,25 @@ router.post('/generate-visual', async (req, res) => {
       ]
     })
 
-    const text = response.choices[0].message.content
-    const cleaned = text.replace(/```json|```/g, '').trim()
-    const data = JSON.parse(cleaned)
-    res.json({ type, data })
+   const text = response.choices[0].message.content
+let cleaned = text.replace(/```json|```/g, '').trim()
+
+// Extract just the JSON object/array if there's extra text around it
+const firstBrace = cleaned.indexOf('{')
+const lastBrace = cleaned.lastIndexOf('}')
+if (firstBrace !== -1 && lastBrace !== -1) {
+  cleaned = cleaned.substring(firstBrace, lastBrace + 1)
+}
+
+let data
+try {
+  data = JSON.parse(cleaned)
+} catch (parseErr) {
+  console.error('JSON PARSE FAILED. Raw AI response:', text)
+  return res.status(500).json({ error: 'AI returned invalid format, please try again' })
+}
+
+res.json({ type, data })
   } catch (err) {
     console.error('VISUAL GEN ERROR:', err)
     res.status(500).json({ error: 'Visual generation failed' })
