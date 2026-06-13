@@ -19,6 +19,7 @@ function Sidebar() {
     { icon: '🗺️', label: 'Roadmap', path: '/roadmap' },
     { icon: '📊', label: 'Progress', path: '/progress' },
     { icon: '🕐', label: 'History', path: '/history' },
+    { icon: '🌳', label: 'Visual Notes', path: '/visual-notes' },
   ]
 
   return (

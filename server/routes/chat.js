@@ -143,4 +143,69 @@ router.post('/generate-roadmap', async (req, res) => {
     res.status(500).json({ error: 'Roadmap generation failed' })
   }
 })
+
+
+
+router.post('/generate-visual', async (req, res) => {
+  try {
+    const { type } = req.body // 'tree', 'mindmap', 'bullets', 'graph'
+
+    let instruction = ''
+    if (type === 'tree') {
+      instruction = `Create a tree diagram structure from this document. Respond ONLY with JSON in this format, no extra text:
+      {
+        "title": "Main Topic",
+        "children": [
+          { "title": "Subtopic 1", "children": [ { "title": "Point A" }, { "title": "Point B" } ] },
+          { "title": "Subtopic 2", "children": [ { "title": "Point C" } ] }
+        ]
+      }`
+    } else if (type === 'mindmap') {
+      instruction = `Create a mind map structure from this document. Respond ONLY with JSON in this format, no extra text:
+      {
+        "title": "Central Idea",
+        "branches": [
+          { "label": "Branch 1", "points": ["point a", "point b"] },
+          { "label": "Branch 2", "points": ["point c"] }
+        ]
+      }`
+    } else if (type === 'bullets') {
+      instruction = `Summarize this document as short bullet points grouped by topic. Respond ONLY with JSON in this format, no extra text:
+      {
+        "sections": [
+          { "heading": "Topic 1", "points": ["short point 1", "short point 2"] },
+          { "heading": "Topic 2", "points": ["short point 3"] }
+        ]
+      }`
+    } else if (type === 'graph') {
+      instruction = `Extract any numeric/comparable data from this document suitable for a bar chart. If no real data exists, create a relevance/importance score (1-10) for key topics instead. Respond ONLY with JSON in this format, no extra text:
+      {
+        "title": "Chart Title",
+        "data": [
+          { "label": "Item 1", "value": 8 },
+          { "label": "Item 2", "value": 5 }
+        ]
+      }`
+    } else {
+      return res.status(400).json({ error: 'Invalid type' })
+    }
+
+    const response = await groq.chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      messages: [
+        { role: 'system', content: instruction },
+        { role: 'user', content: `Document:\n\n${pdfText}` }
+      ]
+    })
+
+    const text = response.choices[0].message.content
+    const cleaned = text.replace(/```json|```/g, '').trim()
+    const data = JSON.parse(cleaned)
+    res.json({ type, data })
+  } catch (err) {
+    console.error('VISUAL GEN ERROR:', err)
+    res.status(500).json({ error: 'Visual generation failed' })
+  }
+})
+
 export default router
