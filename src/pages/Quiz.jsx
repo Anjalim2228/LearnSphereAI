@@ -14,7 +14,7 @@ function Quiz() {
   const generateQuiz = async () => {
     setLoading(true)
     try {
-      const res = await fetch('http://localhost:5000/api/generate-quiz', {
+      const res = await fetch('http://https://learnsphereai-1.onrender.com/api/generate-quiz', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       })

@@ -10,7 +10,7 @@ function Roadmap() {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch('http://localhost:5000/api/generate-roadmap', {
+      const res = await fetch('http://https://learnsphereai-1.onrender.com/api/generate-roadmap', {
         method: 'POST'
       })
       const data = await res.json()

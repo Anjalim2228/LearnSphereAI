@@ -29,7 +29,7 @@ function VisualNotes() {
   setResult(null)
 
   try {
-    const res = await fetch('http://localhost:5000/api/generate-visual', {
+    const res = await fetch('http://https://learnsphereai-1.onrender.com/api/generate-visual', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ type: key })

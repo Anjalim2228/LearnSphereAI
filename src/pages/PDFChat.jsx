@@ -22,7 +22,7 @@ function PDFChat() {
     formData.append('pdf', file)
 
     try {
-      const res = await fetch('http://localhost:5000/api/upload', {
+      const res = await fetch('http://https://learnsphereai-1.onrender.com/api/upload', {
         method: 'POST',
         body: formData
       })
@@ -38,7 +38,7 @@ function PDFChat() {
     if (!youtubeUrl) return
     setYtLoading(true)
     try {
-      const res = await fetch('http://localhost:5000/api/youtube', {
+      const res = await fetch('http://https://learnsphereai-1.onrender.com/api/youtube', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: youtubeUrl })
@@ -65,7 +65,7 @@ function PDFChat() {
     setLoading(true)
 
     try {
-      const res = await fetch('http://localhost:5000/api/chat', {
+      const res = await fetch('http://https://learnsphereai-1.onrender.com/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: userMsg })
