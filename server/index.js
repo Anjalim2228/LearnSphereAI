@@ -14,7 +14,7 @@ app.use(cors())
 app.use(express.json())
 
 app.use('/api', chatRoute)
-app.use('/api', progressRoute)
+app.use('/api/progress', progressRoute)
 
 const PORT = process.env.PORT || 5000
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`))

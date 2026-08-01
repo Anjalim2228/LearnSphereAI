@@ -12,7 +12,7 @@ function Flashcards() {
   const generateFlashcards = async () => {
     setLoading(true)
     try {
-      const res = await fetch('http://https://learnsphereai-1.onrender.com/api/generate-flashcards', {
+      const res = await fetch('http://localhost:5000/api/generate-flashcards', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       })

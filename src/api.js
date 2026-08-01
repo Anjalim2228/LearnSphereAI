@@ -1,6 +1,6 @@
 import { auth } from './firebase/config'
 
-const BASE_URL = 'https://learnsphereai-1.onrender.com/api'
+const BASE_URL = 'https://learnsphereai.onrender.com'
 
 export const getToken = async () => {
   const token = await auth.currentUser?.getIdToken()

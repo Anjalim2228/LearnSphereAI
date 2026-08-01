@@ -22,7 +22,7 @@ function Signup() {
     setError('')
     setLoading(true)
     try {
-     const res = await fetch('https://learnsphereai-1.onrender.com/api/send-otp', {
+      const res = await fetch('http://localhost:5000/api/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
@@ -49,8 +49,7 @@ function Signup() {
     setError('')
     setLoading(true)
     try {
-     const verifyRes = await fetch('https://learnsphereai-1.onrender.com/api/verify-otp', {
-
+      const verifyRes = await fetch('http://localhost:5000/api/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, otp })
